@@ -10,7 +10,6 @@ class App {
 
   async init() {
     await this.load();
-    this.updateFilter();
   }
 
   run = () => {
@@ -27,42 +26,16 @@ class App {
   async load() {
     const cars = await Binar.listCars(() => {
       return (
-        car.availableAt >=
+        Car.availableAt >=
           new Date(this.dateInput.value + "T" + this.timeInput.value) &&
-        (this.passengerInput.value === undefined
+        (this.seatInput.value === undefined
           ? true
-          : car.capacity >= this.passengerInput.value) &&
-        car.driverType === this.driverInput.value
+          : Car.capacity >= this.seatInput.value) &&
+        Car.driverType === this.driverInput.value
       );
     });
     Car.init(cars);
   }
-  updateFilter = () => {
-    const driver = this.driverInput.value;
-    const date = this.dateInput.value;
-    const time = this.timeInput.value;
-
-    if (driver && date && time) {
-      this.filterbtn.removeAttribute("disabled");
-    } else {
-      this.filterbtn.setAttribute("disabled", true);
-    }
-  };
-
-  handleFilterBtnClick = () => {
-    if (
-      this.driverInput.value &&
-      this.dateInput.value &&
-      this.timeInput.value
-    ) {
-      this.filterbtn.classList.remove("btn-success");
-      this.filterbtn.classList.add("btn-outline-primary");
-      this.filterbtn.textContent = "Edit";
-
-      this.clear();
-      this.init().then(this.run);
-    }
-  };
 
   clear = () => {
     this.carContainerElement.innerHTML = "";

@@ -224,5 +224,5 @@ Kelas: FSW 4
 
 ### Entity Relationship Diagram (ERD)
 
-![ERD](public/uploads/images/ERD_Challenge 5.png)
+![ERD](public/uploads/images/ERD_Challenge_5.png)
   

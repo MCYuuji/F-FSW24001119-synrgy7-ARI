@@ -13,11 +13,16 @@ const apiRouter = express.Router()
 //     })
 // })
 
+// cars route
 apiRouter.get("/api/v1/cars", controllers.api.cars.getCars)
 apiRouter.get("/api/v1/cars/:id", controllers.api.cars.getCarByID)
 apiRouter.post("/api/v1/cars", uploadOnMemory.single("image"), controllers.api.cars.addCar)
 apiRouter.put("/api/v1/cars/:id", uploadOnMemory.single("image"), controllers.api.cars.updateCar)
 apiRouter.delete("/api/v1/cars/:id", controllers.api.cars.deleteCar)
+
+// users route
+apiRouter.post("/api/v1/register", controllers.api.users.register)
+apiRouter.post("/api/v1/login", controllers.api.users.login)
 
 apiRouter.use(controllers.api.main.onLost) //Error404
 apiRouter.use(controllers.api.main.onError) //Error500

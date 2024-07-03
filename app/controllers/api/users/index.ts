@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { UsersModel } from '../../../models/user_model';
-import { encryptPass, checkPass} from '../../../utils/encrypt';
+import { encryptPass, checkPass, createToken} from '../../../utils/encrypt';
 
 async function login(req:Request, res:Response){
     const { email, password } = req.body;
@@ -26,13 +26,13 @@ async function login(req:Request, res:Response){
         })
     }
 
-    // const token = await createToken({
-    //     id: user.id,
-    //     email: user.email,
-    //     role: user.role,
-    //     createdAt: user.created_at,
-    //     updatedAt: user.updated_at
-    // })
+    const token = await createToken({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
+    })
 
     res.status(200).json({
         message: "Berhasil Login",
@@ -40,7 +40,7 @@ async function login(req:Request, res:Response){
             id: user.id,
             email: user.email,
             username: user.username,
-            // token,
+            token,
             createdAt: user.created_at,
             updatedAt: user.updated_at
         }
@@ -82,7 +82,16 @@ async function register(req:Request, res:Response){
         })
     }
 }
+
+async function WhoAmI(req:any, res:Response){
+    res.status(200).json({
+        status: 'OK',
+        message: "Success",
+        data: req.user
+    })
+}
 export default{
     register,
-    login
+    login,
+    WhoAmI
 }

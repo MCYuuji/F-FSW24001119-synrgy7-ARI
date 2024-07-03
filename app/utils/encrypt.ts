@@ -1,4 +1,7 @@
+import 'dotenv/config'
+import { env } from "process";
 import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
 const salt = 10;
 
@@ -25,4 +28,8 @@ export async function checkPass(encryptPass: string, password: string)
         throw e
     }
     
+}
+
+export async function createToken(payload: string | Buffer | object){
+    return jwt.sign(payload, String(env.TOKEN_SECRET), { expiresIn: '1800s' })
 }

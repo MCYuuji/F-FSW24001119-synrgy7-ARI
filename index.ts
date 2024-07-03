@@ -1,10 +1,10 @@
 import 'dotenv/config'
 import { env } from "process";
 import express, { Express, NextFunction, Request, Response} from "express";
-import {getCars, getCarByID, addCar, updateCar, deleteCar} from './server/api/cars/cars'
+// import {getCars, getCarByID, addCar, updateCar, deleteCar} from './app/controllers/api/cars/index'
 import knex from 'knex'
 import { Model } from 'objection'
-import uploadOnMemory from './server/middleware/MulterMemory'
+import uploadOnMemory from './app/middleware/MulterMemory'
 import path from 'path'
 
 const app: Express = express();
@@ -29,25 +29,25 @@ app.set('view engine', 'ejs')
 app.use(express.json())
 
 //middleware
-function isAdmin(req:Request, res:Response, next:NextFunction){
-    if(req.query.iam === "admin"){
-        next();
-        return
-    }
+// function isAdmin(req:Request, res:Response, next:NextFunction){
+//     if(req.query.iam === "admin"){
+//         next();
+//         return
+//     }
 
-    res.status(401).send("you're not an Admin!")
-}
+//     res.status(401).send("you're not an Admin!")
+// }
 
-app.get('/', (req:Request, res:Response) => {
-    res.render('index', {
-        name: req.query.name || 'Guest'
-    })
-})
+// app.get('/', (req:Request, res:Response) => {
+//     res.render('index', {
+//         name: req.query.name || 'Guest'
+//     })
+// })
 
-app.get("/api/v1/cars", getCars)
-app.get("/api/v1/cars/:id", getCarByID)
-app.post("/api/v1/cars", uploadOnMemory.single("image"), addCar)
-app.put("/api/v1/cars/:id", uploadOnMemory.single("image"), updateCar)
-app.delete("/api/v1/cars/:id", deleteCar)
+// app.get("/api/v1/cars", getCars)
+// app.get("/api/v1/cars/:id", getCarByID)
+// app.post("/api/v1/cars", uploadOnMemory.single("image"), addCar)
+// app.put("/api/v1/cars/:id", uploadOnMemory.single("image"), updateCar)
+// app.delete("/api/v1/cars/:id", deleteCar)
 
-app.listen(port, () => console.log(`app listen on http://localhost:${port}`))
+// app.listen(port, () => console.log(`app listen on http://localhost:${port}`))

@@ -1,6 +1,7 @@
 import { Model, ModelObject } from 'objection';
+import ObjectionVisibility from 'objection-visibility'
 
-export class UsersModel extends Model {
+export class UsersModel extends ObjectionVisibility(Model) {
   id!: number;
   username!: string;
   email!: string;
@@ -11,7 +12,8 @@ export class UsersModel extends Model {
   updated_by!: string;
   created_at!: string;
   updated_at!: string;
-
+  
+  static hidden = ["password"]
   static get tableName() {
     return 'users'
   }

@@ -1,97 +1,130 @@
-import { Request, Response } from 'express';
-import { UsersModel } from '../../../models/user_model';
-import { encryptPass, checkPass, createToken} from '../../../utils/encrypt';
+import { Request, Response } from 'express'
+import { UsersModel } from '../../../models/user_model'
+import cloudinary from '../../../middleware/Cloudinary'
+import { UploadApiErrorResponse, UploadApiResponse } from 'cloudinary'
 
-async function login(req:Request, res:Response){
-    const { email, password } = req.body;
-    
-    const user = await UsersModel
+async function getUsers(req: Request, res: Response) {
+  const { q } = req.query
+
+  if ( !q ) {
+    const users = await UsersModel.query()
+    return res.status(200).json(users)
+  }
+  const users = await UsersModel
+    .query()
+    .whereLike('username', `%${q}%`)
+
+  return res.status(200).json(users)
+}
+
+async function getUserByID(req: Request, res: Response) {
+  const { id } = req.params
+
+  try {
+    const users = await UsersModel.query().findById(id).throwIfNotFound()
+
+    return res.status(200).json(users)
+  } catch (error) {
+    return res.status(404).send('Data tidak ditemukan')
+  }
+
+}
+
+async function addUser(req: Request, res: Response) {
+  if(!req.body) {
+    return res.status(400).send('Invalid Request')
+  }
+
+  const fileBase64 = req.file?.buffer.toString("base64")
+  const file = `data:${req.file?.mimetype};base64,${fileBase64}`
+
+  cloudinary.uploader.upload(file, async function(err: UploadApiErrorResponse, result: UploadApiResponse) {
+    if(!!err) {
+      console.log(err)
+      return res.status(400).send('Gagal upload files')
+    }
+
+    const users = await UsersModel.query().insert(
+      {
+        ...req.body,
+        image: result.url
+      }
+    ).returning('*')
+    return res.status(200).json(users)
+  })
+
+}
+
+async function updateUser(req: Request, res: Response) {
+  const { id } = req.params
+
+  if (!req.file) {
+    try {
+      const users = await UsersModel
         .query()
-        .findOne({ email })
-    
-    if(!user){
-        return res.status(404)
-        .json({
-            message: "Email tidak ditemukan!"
-        })
+        .where({ id })
+        .patch(req.body)
+        .throwIfNotFound()
+        .returning("*")
+
+      return res.status(200).send('Data berhasil di update')
+    } catch (error) {
+      return res.status(404).send('Data tidak ditemukan')
     }
+  }
 
-    const isPasswordCorrect = await 
-        checkPass(user.password as string, password)
+  const fileBase64 = req.file.buffer.toString("base64")
+  const file = `data:${req.file.mimetype};base64,${fileBase64}`
 
-    if(!isPasswordCorrect){
-        return res.status(401)
-        .json({
-            message: "Password salah!"
-        })
-    }
 
-    const token = await createToken({
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at
-    })
+  cloudinary.uploader.upload(file, async function(err: UploadApiErrorResponse, 
+    result:UploadApiResponse) {
+      if (err) {
+        console.log(err)
+        return res.status(400).send('Gagal upload file')
+      }
 
-    res.status(200).json({
-        message: "Berhasil Login",
-        data: {
-            id: user.id,
-            email: user.email,
-            username: user.username,
-            token,
-            createdAt: user.created_at,
-            updatedAt: user.updated_at
-        }
-    })
-}
+      try {
+        const users = await UsersModel
+          .query()
+          .where({ id })
+          .patch({
+            ...req.body,
+            profile_img: result.url
+          })
+          .throwIfNotFound()
+          .returning('*')
 
-async function register(req:Request, res:Response){
-    const { email, password, username, profile_img } = req.body;
-    if(!email || !password || !username){
-        return res.status(400).json({
-            message: "Silahkan input data dengan lengkap!"
-        })
-    }
-    try{
-        const encryptedPass = await encryptPass(password)
-
-        const user = await UsersModel.query().insert(
-            {
-                email,
-                password: encryptedPass,
-                username,
-                role: 'user',
-                profile_img
-            }
-        )
-        res.status(201).json({
-            message: "Berhasil Register",
-            data: {
-                id: user.id,
-                email: user.email,
-                username: user.username,
-                createdAt: user.created_at,
-                updatedAt: user.updated_at
-            }
-        })
-    } catch(e){
-        res.status(409).json({
-            message: "Email sudah terdaftar!"
-        })
-    }
-}
-
-async function WhoAmI(req:any, res:Response){
-    res.status(200).json({
-        status: 'OK',
-        message: "Success",
-        data: req.user
+        return res.status(404).send('Data berhasil di update')
+      } catch (error) {
+        return res.status(404).send('Data tidak ditemukan')
+      }
     })
 }
-export default{
-    register,
-    login,
-    WhoAmI
+
+async function deleteUser(req: Request, res: Response) {
+  const { id } = req.params
+
+  try {
+    UsersModel
+      .query()
+      .deleteById(id)
+      .throwIfNotFound()
+      .then(() => res.status(200).send("Data berhasil di hapus"))
+      .catch
+
+  } catch (error) {
+    return res.status(404).send('Data tidak ditemukan')
+  }
+
+
+
+}
+
+export default {
+  getUsers,
+  getUserByID,
+  addUser,
+  updateUser,
+  deleteUser
 }

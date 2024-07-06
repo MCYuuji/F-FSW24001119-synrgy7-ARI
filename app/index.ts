@@ -7,6 +7,7 @@ import path from 'path'
 import session from 'express-session';
 import routes from '../config/routes'
 import { Session } from 'inspector';
+import cors from 'cors'
 
 const app: Express = express();
 //knex
@@ -37,6 +38,7 @@ app.use(session({
   saveUninitialized: false,
 }))
 
+app.use (cors())
 app.use(express.urlencoded({ extended: true}))
 app.use(express.json())
 

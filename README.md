@@ -4,4 +4,4 @@ by Muhammad Ariyanta Triputro - FSW4
 ## SuperAdmin
 **Email:** `trueadmin@mail.com` **Password:** `trueadmin1234`
 ## OpenAPI Documentation
-![](./OpenAPI Documentaion.jpg)
+![](./OpenAPI_Documentation.jpg)

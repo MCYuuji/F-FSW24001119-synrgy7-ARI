@@ -1,6 +1,15 @@
+import 'dotenv/config'
+import { env } from "process";
 import { Request, Response } from 'express';
 import { UsersModel } from '../../../models/user_model';
 import { encryptPass, checkPass, createToken} from '../../../utils/encrypt';
+import { OAuth2Client, UserRefreshClient } from 'google-auth-library';
+
+const oAuth2Client = new OAuth2Client(
+    env.CLIENT_ID, //client id
+    env.CLIENT_SECRET, // client secret
+    'postmessage'
+)
 
 async function login(req:Request, res:Response){
     const { email, password } = req.body;
@@ -90,8 +99,104 @@ async function WhoAmI(req:any, res:Response){
         data: req.user
     })
 }
+
+async function googleAuth(req:Request, res:Response){
+    const { tokens } = await oAuth2Client.getToken(req.body.code)
+    const credentials = await oAuth2Client.verifyIdToken({
+        idToken: tokens.id_token!,
+        audience: env.CLIENT_ID
+    })
+    const payload = credentials.getPayload();
+
+    const user = await UsersModel
+        .query()
+        .findOne({ email: payload?.email })
+    
+    if(user){
+        if(!user.googleId){
+            await UsersModel
+                .query()
+                .where({ id: user.id })
+                .patch({
+                    ...user,
+                    googleId: payload?.sub
+                })
+        }
+
+        const token = await createToken({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            createdAt: user.created_at,
+            updatedAt: user.updated_at
+        })
+    
+        return res.status(201).json({
+            message: "Berhasil Login",
+            data: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                token,
+                createdAt: user.created_at,
+                updatedAt: user.updated_at
+            }
+        })
+    }
+
+    try{
+        const user = await UsersModel.query().insert(
+            {
+                email: payload?.email, 
+                password: null,
+                username: payload?.name,
+                role: 'user', 
+                profile_img: payload?.picture,
+                googleId: payload?.sub
+            }        
+        ).returning('*')
+
+        console.log(user);
+
+        const token = await createToken({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            createdAt: user.created_at,
+            updatedAt: user.updated_at
+        })
+
+        res.status(201).json({
+            message: "Berhasil Register",
+            data: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                createdAt: user.created_at,
+                updatedAt: user.updated_at
+            }
+        })
+    } catch(e){
+        console.error(e)
+        res.status(500).json({
+            message: "Internal Server Error"
+        })
+    }
+}
+
+async function googleAuthRefresh(req:Request, res:Response){
+    const user = new UserRefreshClient(
+        env.CLIENT_ID,
+        env.CLIENT_SECRET,
+        req.body.refreshToken,
+    )
+    const { credentials } = await user.refreshAccessToken();
+    res.json(credentials)
+}
 export default{
     register,
     login,
-    WhoAmI
+    WhoAmI,
+    googleAuth,
+    googleAuthRefresh
 }

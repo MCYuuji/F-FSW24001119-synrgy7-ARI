@@ -8,6 +8,7 @@ export class UsersModel extends ObjectionVisibility(Model) {
   password!: string;
   profile_img!: string;
   role!: string;
+  googleId!: string;
   created_by!: string;
   updated_by!: string;
   created_at!: string;

@@ -39,6 +39,10 @@ apiRouter.post("/api/v1/users", [authorize, checkAccess(['admin','superadmin'])]
 apiRouter.put("/api/v1/users/:id", [authorize, checkAccess(['admin','superadmin'])], uploadOnMemory.single("image"), controllers.api.users.updateUser)
 apiRouter.delete("/api/v1/users/:id", [authorize, checkAccess(['admin','superadmin'])], controllers.api.users.deleteUser)
 
+//OAUTH2 google
+apiRouter.post('/auth/google', controllers.api.auth.googleAuth)
+apiRouter.post('/auth/google/refresh', controllers.api.auth.googleAuthRefresh)
+
 apiRouter.use(controllers.api.main.onLost) //Error404
 apiRouter.use(controllers.api.main.onError) //Error500
 

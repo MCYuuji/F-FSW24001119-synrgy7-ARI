@@ -4,8 +4,6 @@ import {
   Carousel,
   CarouselItem,
   CarouselControl,
-  CarouselIndicators,
-  CarouselCaption,
 } from 'reactstrap';
 
 const items = [
@@ -45,10 +43,6 @@ function Carousels(args:any) {
     setActiveIndex(nextIndex);
   };
 
-  const goToIndex = (newIndex:any) => {
-    if (animating) return;
-    setActiveIndex(newIndex);
-  };
 
   const slides = items.map((item) => {
     return (
@@ -57,12 +51,6 @@ function Carousels(args:any) {
         onExited={() => setAnimating(false)}
         key={item.src}
       >
-
-
-
-
-
-
         <div className="box-review">
                 <img className="profile-photo" src={item.src} alt=""/>
                 <div className="review">
@@ -90,14 +78,6 @@ function Carousels(args:any) {
                   <p><strong>John Dee 32, Bromo</strong></p>
                 </div>
               </div>
-
-
-
-
-        {/* <CarouselCaption
-          captionText={item.caption}
-          captionHeader={item.caption}
-        /> */}
       </CarouselItem>
     );
   });
@@ -110,11 +90,6 @@ function Carousels(args:any) {
       dark={true}
       {...args}
     >
-      {/* <CarouselIndicators
-        items={items}
-        activeIndex={activeIndex}
-        onClickHandler={goToIndex}
-      /> */}
       {slides}
       <CarouselControl
         direction="prev"
